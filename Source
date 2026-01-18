@@ -1820,4 +1820,182 @@ VirtualUser:CaptureController()
 VirtualUser:ClickButton2(Vector2.new())
 end)
 
+
+
+function library:Notify(config)
+    
+    if not library.base then
+        warn("not found library:Init()")
+        return
+    end
+
+    
+    local notifyContainer = library.base:FindFirstChild("NotifyContainer")
+    if not notifyContainer then
+        notifyContainer = library:Create("Frame", {
+            Name = "NotifyContainer",
+            Position = UDim2.new(1, -20, 1, -20), 
+            Size = UDim2.new(0, 300, 1, 0), 
+            AnchorPoint = Vector2.new(1, 1),
+            BackgroundTransparency = 1,
+            Parent = library.base, 
+            ClipsDescendants = false
+        })
+
+        library:Create("UIListLayout", {
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            VerticalAlignment = Enum.VerticalAlignment.Bottom,
+            Padding = UDim.new(0, 10), 
+            Parent = notifyContainer
+        })
+    end
+
+    
+    config = typeof(config) == "table" and config or {}
+    local titleText = config.title or "Notification"
+    local descText = config.content or "test"
+    local duration = config.duration or 5
+    local image = config.image or "rbxassetid://3944703587" 
+
+    
+    local notifyFrame = library:Create("Frame", {
+        Name = "NotifyFrame",
+        Size = UDim2.new(1, 0, 0, 80), 
+        BackgroundTransparency = 1, 
+        BackgroundColor3 = Color3.fromRGB(15, 15, 15), 
+        Parent = notifyContainer,
+        ClipsDescendants = true,
+        LayoutOrder = tick() 
+    })
+    
+    
+    library:Create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = notifyFrame
+    })
+    
+    
+    local stroke = library:Create("UIStroke", {
+        Color = Color3.fromRGB(60, 60, 60), 
+        Thickness = 1,
+        Transparency = 1, 
+        Parent = notifyFrame
+    })
+
+    
+    local icon = library:Create("ImageLabel", {
+        Name = "Icon",
+        Position = UDim2.new(0, 15, 0, 15),
+        Size = UDim2.new(0, 24, 0, 24),
+        BackgroundTransparency = 1,
+        Image = image,
+        ImageColor3 = Color3.fromRGB(255, 255, 255),
+        ImageTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    
+    local titleLabel = library:Create("TextLabel", {
+        Name = "Title",
+        Position = UDim2.new(0, 50, 0, 15),
+        Size = UDim2.new(1, -60, 0, 24),
+        BackgroundTransparency = 1,
+        Text = titleText,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    
+    local descLabel = library:Create("TextLabel", {
+        Name = "Description",
+        Position = UDim2.new(0, 50, 0, 42),
+        Size = UDim2.new(1, -60, 0, 30),
+        BackgroundTransparency = 1,
+        Text = descText,
+        TextSize = 13,
+        Font = Enum.Font.Gotham,
+        TextColor3 = Color3.fromRGB(180, 180, 180), 
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true,
+        TextTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    
+    local progressBar = library:Create("Frame", {
+        Name = "Timer",
+        Position = UDim2.new(0, 0, 1, -2),
+        Size = UDim2.new(0, 0, 0, 2), 
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255), 
+        BorderSizePixel = 0,
+        Parent = notifyFrame
+    })
+
+    local closeBtn = library:Create("ImageButton", {
+        Position = UDim2.new(1, -25, 0, 15),
+        Size = UDim2.new(0, 20, 0, 20),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://127981991568413",
+        ImageColor3 = Color3.fromRGB(150, 150, 150),
+        ImageTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    
+    tweenService:Create(notifyFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
+    tweenService:Create(stroke, TweenInfo.new(0.3), {Transparency = 0}):Play()
+    
+        
+    delay(0.1, function()
+        tweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        tweenService:Create(descLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        tweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+        tweenService:Create(closeBtn, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+    end)
+
+    
+    tweenService:Create(progressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 2)}):Play()
+
+    
+    local closed = false
+    local function closeNotify()
+        if closed then return end
+        closed = true
+        
+        
+        tweenService:Create(notifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 50, 0, 0) 
+        }):Play()
+        tweenService:Create(stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+        tweenService:Create(titleLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        tweenService:Create(descLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        tweenService:Create(icon, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+        tweenService:Create(progressBar, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+
+        
+        delay(0.4, function()
+            notifyFrame:Destroy()
+        end)
+    end
+
+    
+    delay(duration, closeNotify)
+
+    
+    closeBtn.MouseButton1Click:Connect(closeNotify)
+    closeBtn.MouseEnter:Connect(function()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+    closeBtn.MouseLeave:Connect(function()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+    end)
+end
+
 return library
