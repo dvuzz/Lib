@@ -693,6 +693,7 @@ local function createList(option, parent, holder)
 	
 	
 	if option.multiselect then
+		
 		if type(option.value) == "string" and option.value ~= "" then
 			option.value = {[option.value] = true}
 		elseif type(option.value) ~= "table" then
@@ -710,7 +711,7 @@ local function createList(option, parent, holder)
 		Parent = parent.content
 	})
 	
-	
+
 	local round = library:Create("ImageLabel", {
 		Position = UDim2.new(0, 6, 0, 4),
 		Size = UDim2.new(1, -12, 1, -10),
@@ -723,7 +724,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	
+
 	local title = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 8),
 		Size = UDim2.new(1, -24, 0, 14),
@@ -736,7 +737,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	
+
 	local listvalue = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 20),
 		Size = UDim2.new(1, -40, 0, 24),
@@ -750,7 +751,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	
+
 	local arrow = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -12, 0.5, 0),
@@ -758,12 +759,12 @@ local function createList(option, parent, holder)
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://4918373417",
 		ImageColor3 = Color3.fromRGB(140, 140, 140),
-		Rotation = 180, 
+		Rotation = 180,
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = round
 	})
 
-	
+
 	option.mainHolder = library:Create("ImageButton", {
 		ZIndex = 10,
 		Size = UDim2.new(0, 240, 0, 52),
@@ -778,7 +779,7 @@ local function createList(option, parent, holder)
 		Parent = library.base
 	})
 
-	
+
 	local searchBar = library:Create("TextBox", {
 		ZIndex = 11,
 		Position = UDim2.new(0, 10, 0, 5),
@@ -838,6 +839,7 @@ local function createList(option, parent, holder)
 	
 	layout.Changed:connect(updateSize)
 
+	 
 	function option:RefreshList(searchText)
 		searchText = searchText and string.lower(searchText) or ""
 		
@@ -851,6 +853,7 @@ local function createList(option, parent, holder)
 			if searchText == "" or string.find(string.lower(strValue), searchText) then
 				valueCount = valueCount + 1
 				
+			
 				local isSelected = false
 				if option.multiselect then
 					isSelected = option.value[strValue] == true
@@ -873,12 +876,13 @@ local function createList(option, parent, holder)
 					Parent = content
 				})
 				
+				
 				if option.multiselect and isSelected then
-					library:Create("ImageLabel", {
+					local checkIcon = library:Create("ImageLabel", {
 						Position = UDim2.new(1, -25, 0.5, -6),
 						Size = UDim2.new(0, 12, 0, 12),
 						BackgroundTransparency = 1,
-						Image = "rbxassetid://4919148038",
+						Image = "rbxassetid://4919148038", 
 						ImageColor3 = Color3.fromRGB(255, 255, 255),
 						Parent = itemBtn
 					})
@@ -900,15 +904,17 @@ local function createList(option, parent, holder)
 
 				itemBtn.MouseButton1Click:Connect(function()
 					if option.multiselect then
+					
 						local newValue = option.value
 						if newValue[strValue] then
-							newValue[strValue] = nil
+							newValue[strValue] = nil 
 						else
-							newValue[strValue] = true
+							newValue[strValue] = true 
 						end
 						option:SetValue(newValue)
-						option:RefreshList(searchBar.Text)
+						option:RefreshList(searchBar.Text) 
 					else
+						
 						option:SetValue(strValue)
 						option:Close()
 					end
@@ -922,7 +928,6 @@ local function createList(option, parent, holder)
 		option:RefreshList(searchBar.Text)
 	end)
 
-	
 	local inContact
 	
 	round.InputBegan:connect(function(input)
@@ -937,9 +942,6 @@ local function createList(option, parent, holder)
 			end
 
 			local position = main.AbsolutePosition
-			local mainSize = main.AbsoluteSize 
-			
-			
 			option.mainHolder.Position = UDim2.new(0, position.X + mainSize.X + 5, 0, position.Y)
 			
 			option.open = true
@@ -948,12 +950,9 @@ local function createList(option, parent, holder)
 			searchBar.Text = ""
 			option:RefreshList("") 
 			
-			
 			option.mainHolder.ImageTransparency = 1
 			tweenService:Create(option.mainHolder, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-			
-			
-			tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = -90}):Play()
+			tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
 			tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
 
 			wait() 
@@ -979,11 +978,13 @@ local function createList(option, parent, holder)
 	
 	function option:SetValue(value)
 		if option.multiselect then
+			
 			library.flags[self.flag] = value
 			self.value = value
 			
+			
 			local displayTable = {}
-			for _, v in ipairs(option.values) do
+			for _, v in ipairs(option.values) do 
 				if value[tostring(v)] then
 					table.insert(displayTable, tostring(v))
 				end
@@ -993,8 +994,9 @@ local function createList(option, parent, holder)
 			if displayText == "" then displayText = "None" end
 			
 			listvalue.Text = displayText
-			self.callback(value)
+			self.callback(value) 
 		else
+			
 			library.flags[self.flag] = tostring(value)
 			self.value = tostring(value)
 			listvalue.Text = self.value
@@ -1007,9 +1009,7 @@ local function createList(option, parent, holder)
 		self.open = false
 		
 		tweenService:Create(self.mainHolder, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1}):Play()
-		
-		
-		tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 180}):Play()
+		tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = -90}):Play()
 		tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 
 		delay(0.2, function()
@@ -1018,6 +1018,7 @@ local function createList(option, parent, holder)
 			end
 		end)
 	end
+    
     
     if option.multiselect then
         option:SetValue(option.value)
