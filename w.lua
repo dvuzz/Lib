@@ -529,7 +529,7 @@ local function createSlider(option, parent)
 		Parent = parent.content
 	})
 	
-	-- Tiêu đề Slider
+	
 	local title = library:Create("TextLabel", {
 		Position = UDim2.new(0, 10, 0, 5),
 		Size = UDim2.new(0.5, 0, 0, 20),
@@ -542,7 +542,7 @@ local function createSlider(option, parent)
 		Parent = main
 	})
 	
-	-- Ô nhập giá trị (TextBox) nằm bên phải
+	
 	local valueBg = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 5),
@@ -566,7 +566,7 @@ local function createSlider(option, parent)
 		Parent = valueBg
 	})
 
-	-- Thanh nền Slider (Background)
+	
 	local sliderBg = library:Create("ImageLabel", {
 		Position = UDim2.new(0, 10, 0, 35),
 		Size = UDim2.new(1, -20, 0, 6),
@@ -579,19 +579,19 @@ local function createSlider(option, parent)
 		Parent = main
 	})
 	
-	-- Thanh hiển thị mức độ (Fill)
+	
 	local fill = library:Create("ImageLabel", {
 		Size = UDim2.new(0, 0, 1, 0),
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://3570695787",
-		ImageColor3 = Color3.fromRGB(255, 255, 255), -- Màu gốc trắng để đè Gradient
+		ImageColor3 = Color3.fromRGB(255, 255, 255), 
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(100, 100, 100, 100),
 		SliceScale = 0.02,
 		Parent = sliderBg
 	})
 	
-	-- Hiệu ứng Gradient cho thanh Fill (Màu xanh dương cyan)
+	
 	local gradient = library:Create("UIGradient", {
 		Color = ColorSequence.new{
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 125, 220)),
@@ -600,25 +600,25 @@ local function createSlider(option, parent)
 		Parent = fill
 	})
 
-	-- Nút kéo (Knob/Circle)
+	
 	local circle = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0, 0, 0.5, 0),
 		Size = UDim2.new(0, 14, 0, 14),
 		BackgroundTransparency = 1,
-		Image = "rbxassetid://3570695787", -- Dùng hình tròn
+		Image = "rbxassetid://3570695787", 
 		ImageColor3 = Color3.fromRGB(255, 255, 255),
 		ScaleType = Enum.ScaleType.Slice,
 		SliceCenter = Rect.new(100, 100, 100, 100),
-		SliceScale = 1, -- Bo tròn hoàn toàn
-		Parent = fill -- Đặt trong Fill để nó đi theo thanh Fill
+		SliceScale = 1, 
+		Parent = fill 
 	})
 	
-	-- Tạo viền sáng nhẹ (Glow) cho nút kéo
+
 	local circleGlow = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(1, 8, 1, 8), -- To hơn nút gốc
+		Size = UDim2.new(1, 8, 1, 8), 
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://3570695787",
 		ImageColor3 = Color3.fromRGB(60, 220, 235),
@@ -629,43 +629,40 @@ local function createSlider(option, parent)
 		Parent = circle
 	})
 	
-	-- Logic cập nhật Slider
+
 	local dragging = false
 	
 	local function updateSlider(input)
 		local sizeX = sliderBg.AbsoluteSize.X
 		local positionX = sliderBg.AbsolutePosition.X
 		
-		-- Tính phần trăm (0 -> 1)
+		
 		local percent = math.clamp((input.Position.X - positionX) / sizeX, 0, 1)
 		
-		-- Tính giá trị thực tế
+		
 		local value = option.min + (option.max - option.min) * percent
-		value = round(value, option.float) -- Làm tròn số
+		value = round(value, option.float) 
 		
 		option:SetValue(value)
 	end
 	
-	-- Hàm Set Value (Cập nhật UI & Gọi callback)
+	
 	function option:SetValue(value)
-		-- Clamp giá trị nằm trong min/max
+		
 		value = math.clamp(value, self.min, self.max)
 		
-		-- Làm tròn lần nữa cho chắc
+	
 		local roundedValue = round(value, option.float)
 		
-		-- Tính lại phần trăm để hiển thị UI
+		
 		local percent = (roundedValue - self.min) / (self.max - self.min)
 		
-		-- Animation mượt cho thanh Fill
+		
 		tweenService:Create(fill, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			Size = UDim2.new(percent, 0, 1, 0)
 		}):Play()
 		
-		-- Vì nút circle nằm trong fill, ta set vị trí nó ở cuối thanh fill
-		-- Tuy nhiên, để chính xác ta nên set vị trí circle theo sliderBg thì dễ hơn, 
-		-- nhưng ở trên ta parent circle vào fill.
-		-- Chỉnh lại: Parent circle vào fill thì Position X luôn là 1 (tức là 100% của fill)
+		
 		circle.Position = UDim2.new(1, 0, 0.5, 0)
 
 		library.flags[self.flag] = roundedValue
@@ -674,7 +671,7 @@ local function createSlider(option, parent)
 		self.callback(roundedValue)
 	end
 
-	-- Sự kiện nhập số vào TextBox
+	
 	inputvalue.FocusLost:connect(function()
 		local num = tonumber(inputvalue.Text)
 		if num then
@@ -684,13 +681,13 @@ local function createSlider(option, parent)
 		end
 	end)
 
-	-- Sự kiện kéo chuột
+
 	sliderBg.InputBegan:connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			updateSlider(input)
 			
-			-- Animation phóng to nút khi kéo
+			
 			tweenService:Create(circle, TweenInfo.new(0.2), {Size = UDim2.new(0, 18, 0, 18)}):Play()
 			tweenService:Create(circleGlow, TweenInfo.new(0.2), {ImageTransparency = 0.5}):Play()
 			tweenService:Create(valueBg, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(50, 50, 50)}):Play()
@@ -701,7 +698,7 @@ local function createSlider(option, parent)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
 			
-			-- Animation thu nhỏ nút khi thả
+		
 			tweenService:Create(circle, TweenInfo.new(0.2), {Size = UDim2.new(0, 14, 0, 14)}):Play()
 			tweenService:Create(circleGlow, TweenInfo.new(0.2), {ImageTransparency = 0.8}):Play()
 			tweenService:Create(valueBg, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(30, 30, 30)}):Play()
@@ -714,15 +711,15 @@ local function createSlider(option, parent)
 		end
 	end)
 
-    -- Khởi tạo giá trị ban đầu
+ 
 	option:SetValue(option.value)
 end
 
 local function createList(option, parent, holder)
-	-- [CẤU HÌNH] Kiểm tra Multi-Select
+
 	option.multiselect = option.multiselect or false
 	
-	-- Chuẩn hóa dữ liệu
+
 	if option.multiselect then
 		if type(option.value) == "string" and option.value ~= "" then
 			option.value = {[option.value] = true}
@@ -733,7 +730,7 @@ local function createList(option, parent, holder)
 
 	local valueCount = 0
 	
-	-- Main Frame
+
 	local main = library:Create("Frame", {
 		LayoutOrder = option.position,
 		Size = UDim2.new(1, 0, 0, 52),
@@ -741,7 +738,7 @@ local function createList(option, parent, holder)
 		Parent = parent.content
 	})
 	
-	-- Nền nút bấm
+
 	local round = library:Create("ImageLabel", {
 		Position = UDim2.new(0, 6, 0, 4),
 		Size = UDim2.new(1, -12, 1, -10),
@@ -754,7 +751,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Tiêu đề
+
 	local title = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 8),
 		Size = UDim2.new(1, -24, 0, 14),
@@ -767,7 +764,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Giá trị hiển thị
+
 	local listvalue = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 20),
 		Size = UDim2.new(1, -40, 0, 24),
@@ -781,7 +778,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Mũi tên (Xoay -90 độ để chỉ sang phải cho hợp lý hơn)
+	
 	local arrow = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -12, 0.5, 0),
@@ -789,12 +786,12 @@ local function createList(option, parent, holder)
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://4918373417",
 		ImageColor3 = Color3.fromRGB(140, 140, 140),
-		Rotation = -90, -- Mặc định chỉ sang phải
+		Rotation = -90, 
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = round
 	})
 
-	-- Popup Holder
+
 	option.mainHolder = library:Create("ImageButton", {
 		ZIndex = 10,
 		Size = UDim2.new(0, 240, 0, 52),
@@ -809,7 +806,7 @@ local function createList(option, parent, holder)
 		Parent = library.base
 	})
 
-	-- Search Bar
+
 	local searchBar = library:Create("TextBox", {
 		ZIndex = 11,
 		Position = UDim2.new(0, 10, 0, 5),
@@ -953,7 +950,7 @@ local function createList(option, parent, holder)
 		option:RefreshList(searchBar.Text)
 	end)
 
-	-- Xử lý đóng mở
+
 	local inContact
 	
 	round.InputBegan:connect(function(input)
@@ -968,10 +965,9 @@ local function createList(option, parent, holder)
 			end
 
 			local position = main.AbsolutePosition
-			local mainSize = main.AbsoluteSize -- Lấy kích thước nút bấm
+			local mainSize = main.AbsoluteSize 
 			
-			-- >>> [CHỈNH SỬA Ở ĐÂY] <<<
-			-- Hiển thị bên PHẢI: X + Chiều rộng nút + 5px khoảng cách. Giữ nguyên Y.
+			
 			option.mainHolder.Position = UDim2.new(0, position.X + mainSize.X + 5, 0, position.Y)
 			
 			option.open = true
@@ -980,11 +976,11 @@ local function createList(option, parent, holder)
 			searchBar.Text = ""
 			option:RefreshList("") 
 			
-			-- Animation
+			
 			option.mainHolder.ImageTransparency = 1
 			tweenService:Create(option.mainHolder, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
 			
-			-- Xoay mũi tên (Từ -90 sang 90 độ khi mở)
+			
 			tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
 			tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
 
@@ -1040,7 +1036,7 @@ local function createList(option, parent, holder)
 		
 		tweenService:Create(self.mainHolder, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1}):Play()
 		
-		-- Trả mũi tên về -90 (hướng sang phải)
+		
 		tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = -90}):Play()
 		tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 
@@ -1823,5 +1819,173 @@ game:service('Players').LocalPlayer.Idled:connect(function()
 VirtualUser:CaptureController()
 VirtualUser:ClickButton2(Vector2.new())
 end)
+
+-- Container chứa các thông báo
+local notifyContainer = library:Create("Frame", {
+    Name = "NotifyContainer",
+    Position = UDim2.new(1, -20, 1, -20), -- Góc phải dưới
+    Size = UDim2.new(0, 300, 1, 0), -- Rộng 300px
+    AnchorPoint = Vector2.new(1, 1),
+    BackgroundTransparency = 1,
+    Parent = library.base -- Đảm bảo library.Init() đã chạy trước khi gọi notify
+})
+
+local notifyLayout = library:Create("UIListLayout", {
+    SortOrder = Enum.SortOrder.LayoutOrder,
+    VerticalAlignment = Enum.VerticalAlignment.Bottom,
+    Padding = UDim.new(0, 10), -- Khoảng cách giữa các thông báo
+    Parent = notifyContainer
+})
+
+function library:Notify(config)
+    -- Cấu hình mặc định
+    config = typeof(config) == "table" and config or {}
+    local titleText = config.title or "Notification"
+    local descText = config.content or "No content provided."
+    local duration = config.duration or 5
+    local image = config.image or "rbxassetid://3944703587" -- Icon chuông mặc định
+
+    -- Frame chính
+    local notifyFrame = library:Create("Frame", {
+        Name = "NotifyFrame",
+        Size = UDim2.new(1, 0, 0, 80), -- Chiều cao ban đầu
+        BackgroundTransparency = 1, -- Sẽ tween sau
+        BackgroundColor3 = Color3.fromRGB(15, 15, 15), -- Nền đen nhám
+        Parent = notifyContainer,
+        ClipsDescendants = true,
+        LayoutOrder = tick() -- Đảm bảo cái mới nằm dưới cùng
+    })
+    
+    -- Bo góc
+    library:Create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = notifyFrame
+    })
+    
+    -- Viền trắng mỏng (Premium look)
+    library:Create("UIStroke", {
+        Color = Color3.fromRGB(60, 60, 60), -- Viền xám tối
+        Thickness = 1,
+        Transparency = 1, -- Sẽ tween hiện lên
+        Parent = notifyFrame
+    })
+
+    -- Icon
+    local icon = library:Create("ImageLabel", {
+        Name = "Icon",
+        Position = UDim2.new(0, 15, 0, 15),
+        Size = UDim2.new(0, 24, 0, 24),
+        BackgroundTransparency = 1,
+        Image = image,
+        ImageColor3 = Color3.fromRGB(255, 255, 255),
+        ImageTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    -- Tiêu đề
+    local titleLabel = library:Create("TextLabel", {
+        Name = "Title",
+        Position = UDim2.new(0, 50, 0, 15),
+        Size = UDim2.new(1, -60, 0, 24),
+        BackgroundTransparency = 1,
+        Text = titleText,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    -- Nội dung
+    local descLabel = library:Create("TextLabel", {
+        Name = "Description",
+        Position = UDim2.new(0, 50, 0, 42),
+        Size = UDim2.new(1, -60, 0, 30),
+        BackgroundTransparency = 1,
+        Text = descText,
+        TextSize = 13,
+        Font = Enum.Font.Gotham,
+        TextColor3 = Color3.fromRGB(180, 180, 180), -- Màu xám trắng
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true,
+        TextTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    -- Thanh thời gian (Progress Bar)
+    local progressBar = library:Create("Frame", {
+        Name = "Timer",
+        Position = UDim2.new(0, 0, 1, -2),
+        Size = UDim2.new(0, 0, 0, 2), -- Bắt đầu từ 0
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255), -- Trắng
+        BorderSizePixel = 0,
+        Parent = notifyFrame
+    })
+
+    -- Nút tắt (X)
+    local closeBtn = library:Create("ImageButton", {
+        Position = UDim2.new(1, -25, 0, 15),
+        Size = UDim2.new(0, 20, 0, 20),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://6031094670",
+        ImageColor3 = Color3.fromRGB(150, 150, 150),
+        ImageTransparency = 1,
+        Parent = notifyFrame
+    })
+
+    -- === ANIMATION VÀO (Intro) ===
+    -- 1. Tween Background + Stroke hiện lên
+    tweenService:Create(notifyFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.1}):Play()
+    tweenService:Create(notifyFrame:FindFirstChild("UIStroke"), TweenInfo.new(0.3), {Transparency = 0}):Play()
+    
+    -- 2. Tween Text + Icon hiện lên sau 1 chút
+    delay(0.1, function()
+        tweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        tweenService:Create(descLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        tweenService:Create(icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+        tweenService:Create(closeBtn, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
+    end)
+
+    -- 3. Hiệu ứng thanh thời gian chạy
+    tweenService:Create(progressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 2)}):Play()
+
+    -- Hàm đóng thông báo
+    local closed = false
+    local function closeNotify()
+        if closed then return end
+        closed = true
+        
+        -- Animation biến mất (Trượt sang phải + Mờ dần)
+        tweenService:Create(notifyFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 50, 0, 0) -- Trượt nhẹ sang phải
+        }):Play()
+        tweenService:Create(notifyFrame:FindFirstChild("UIStroke"), TweenInfo.new(0.3), {Transparency = 1}):Play()
+        tweenService:Create(titleLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        tweenService:Create(descLabel, TweenInfo.new(0.2), {TextTransparency = 1}):Play()
+        tweenService:Create(icon, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+        tweenService:Create(progressBar, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+
+        -- Xóa UI sau khi animation xong
+        delay(0.4, function()
+            notifyFrame:Destroy()
+        end)
+    end
+
+    -- Tự động đóng sau duration
+    delay(duration, closeNotify)
+
+    -- Sự kiện nút tắt
+    closeBtn.MouseButton1Click:Connect(closeNotify)
+    closeBtn.MouseEnter:Connect(function()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+    closeBtn.MouseLeave:Connect(function()
+        tweenService:Create(closeBtn, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+    end)
+end
 
 return library
