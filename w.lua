@@ -1633,18 +1633,15 @@ function library:Init()
 	elseif gethui then
 		gethui(self.base)
 	else
-		-- Fallback nếu không có hàm bảo vệ, dùng PlayerGui
-		self.base.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+        self.base.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 	end
-	
-	-- Đặt tên để dễ debug
-	self.base.Name = "ToraScript_UI"
-    self.base.ResetOnSpawn = false -- Giữ UI khi chết
+	self.base.ResetOnSpawn = true
+	self.base.Name = "ToraScript"
 
-	-- Tạo Container chứa Notification (Góc dưới bên phải)
-	self.notifContainer = library:Create("Frame", {
-		Position = UDim2.new(1, -20, 1, -20), -- Cách góc phải dưới 20px
-		Size = UDim2.new(0, 300, 1, 0), -- Chiều rộng 300px
+    -- NOTIFICATION CONTAINER
+    self.notifContainer = library:Create("Frame", {
+		Position = UDim2.new(1, -20, 1, -20),
+		Size = UDim2.new(0, 300, 1, 0),
 		AnchorPoint = Vector2.new(1, 1),
 		BackgroundTransparency = 1,
 		Parent = self.base
@@ -1653,11 +1650,10 @@ function library:Init()
 	local notifLayout = library:Create("UIListLayout", {
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		VerticalAlignment = Enum.VerticalAlignment.Bottom,
-		Padding = UDim.new(0, 8), -- Khoảng cách giữa các thông báo
+		Padding = UDim.new(0, 8),
 		Parent = self.notifContainer
 	})
-
-    -- Khởi tạo các Window cũ (Logic cũ của bạn)
+	
 	for _, window in next, self.windows do
 		if window.canInit and not window.init then
 			window.init = true
@@ -1666,6 +1662,119 @@ function library:Init()
 		end
 	end
 	return self.base
+end
+
+function library:Notification(title, text, duration)
+    if not self.base then self:Init() end
+    duration = duration or 5
+    
+    local notifFrame = library:Create("Frame", {
+        Size = UDim2.new(1, 0, 0, 70),
+        BackgroundTransparency = 1,
+        Parent = self.notifContainer,
+        LayoutOrder = 99999
+    })
+
+    local bg = library:Create("ImageLabel", {
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(1, 40, 0, 0),
+        Image = "rbxassetid://3570695787",
+        ImageColor3 = Color3.fromRGB(15, 15, 15), -- Black background
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(100, 100, 100, 100),
+        SliceScale = 0.06,
+        BackgroundTransparency = 1,
+        Parent = notifFrame
+    })
+
+    local stroke = library:Create("ImageLabel", {
+        Size = UDim2.new(1, 2, 1, 2),
+        Position = UDim2.new(0, -1, 0, -1),
+        Image = "rbxassetid://3570695787",
+        ImageColor3 = Color3.fromRGB(255, 255, 255),
+        ImageTransparency = 0.8,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(100, 100, 100, 100),
+        SliceScale = 0.06,
+        BackgroundTransparency = 1,
+        ZIndex = 0,
+        Parent = bg
+    })
+
+    local accentBar = library:Create("ImageLabel", {
+        Size = UDim2.new(0, 4, 1, -16),
+        Position = UDim2.new(0, 8, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5),
+        Image = "rbxassetid://3570695787",
+        ImageColor3 = Color3.fromRGB(255, 255, 255),
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(100, 100, 100, 100),
+        SliceScale = 0.04,
+        BackgroundTransparency = 1,
+        Parent = bg
+    })
+
+    local titleLabel = library:Create("TextLabel", {
+        Position = UDim2.new(0, 20, 0, 8),
+        Size = UDim2.new(1, -25, 0, 20),
+        BackgroundTransparency = 1,
+        Text = title or "Notification",
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = bg
+    })
+
+    local descLabel = library:Create("TextLabel", {
+        Position = UDim2.new(0, 20, 0, 28),
+        Size = UDim2.new(1, -25, 0, 35),
+        BackgroundTransparency = 1,
+        Text = text or "Notification text here.",
+        TextColor3 = Color3.fromRGB(200, 200, 200),
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true,
+        Parent = bg
+    })
+
+    local progressBarBg = library:Create("Frame", {
+        Position = UDim2.new(0, 20, 1, -6),
+        Size = UDim2.new(1, -40, 0, 2),
+        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+        BorderSizePixel = 0,
+        Parent = bg
+    })
+
+    local progressBar = library:Create("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+        Parent = progressBarBg
+    })
+
+    tweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+    tweenService:Create(progressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 0, 1, 0)}):Play()
+
+    task.delay(duration, function()
+        local tweenOut = tweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 40, 0, 0),
+            ImageTransparency = 1
+        })
+        
+        tweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        tweenService:Create(descLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+        tweenService:Create(accentBar, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
+        tweenService:Create(progressBarBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        tweenService:Create(progressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        tweenService:Create(stroke, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
+
+        tweenOut:Play()
+        tweenOut.Completed:Wait()
+        notifFrame:Destroy()
+    end)
 end
 
 function library:Close()
@@ -1719,135 +1828,5 @@ game:service('Players').LocalPlayer.Idled:connect(function()
 VirtualUser:CaptureController()
 VirtualUser:ClickButton2(Vector2.new())
 end)
-
-function library:Notification(title, text, duration)
-    -- Nếu chưa Init thì chạy Init trước
-    if not self.base then self:Init() end
-
-    duration = duration or 5 -- Mặc định 5 giây
-    
-    -- Main Frame (Thân thông báo)
-    local notifFrame = library:Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 70), -- Chiều cao ban đầu
-        BackgroundTransparency = 1,
-        Parent = self.notifContainer,
-        LayoutOrder = 99999 -- Sẽ được xếp mới nhất
-    })
-
-    -- Background màu Đen (Black) bo tròn
-    local bg = library:Create("ImageLabel", {
-        Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(1, 40, 0, 0), -- Bắt đầu từ bên phải (để trượt vào)
-        Image = "rbxassetid://3570695787", -- Ảnh bo tròn có sẵn trong lib
-        ImageColor3 = Color3.fromRGB(15, 15, 15), -- Đen xám cực tối
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(100, 100, 100, 100),
-        SliceScale = 0.06,
-        BackgroundTransparency = 1,
-        Parent = notifFrame
-    })
-
-    -- Viền sáng nhẹ (Glow/Stroke effect giả lập)
-    local stroke = library:Create("ImageLabel", {
-        Size = UDim2.new(1, 2, 1, 2),
-        Position = UDim2.new(0, -1, 0, -1),
-        Image = "rbxassetid://3570695787",
-        ImageColor3 = Color3.fromRGB(255, 255, 255), -- Viền Trắng
-        ImageTransparency = 0.8,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(100, 100, 100, 100),
-        SliceScale = 0.06,
-        BackgroundTransparency = 1,
-        ZIndex = 0,
-        Parent = bg
-    })
-
-    -- Thanh trang trí bên trái (White Accent)
-    local accentBar = library:Create("ImageLabel", {
-        Size = UDim2.new(0, 4, 1, -16),
-        Position = UDim2.new(0, 8, 0.5, 0),
-        AnchorPoint = Vector2.new(0, 0.5),
-        Image = "rbxassetid://3570695787",
-        ImageColor3 = Color3.fromRGB(255, 255, 255), -- Trắng tinh
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(100, 100, 100, 100),
-        SliceScale = 0.04,
-        BackgroundTransparency = 1,
-        Parent = bg
-    })
-
-    -- Tiêu đề (Title)
-    local titleLabel = library:Create("TextLabel", {
-        Position = UDim2.new(0, 20, 0, 8),
-        Size = UDim2.new(1, -25, 0, 20),
-        BackgroundTransparency = 1,
-        Text = title or "Notification",
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 16,
-        Font = Enum.Font.GothamBold,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = bg
-    })
-
-    -- Nội dung (Description)
-    local descLabel = library:Create("TextLabel", {
-        Position = UDim2.new(0, 20, 0, 28),
-        Size = UDim2.new(1, -25, 0, 35),
-        BackgroundTransparency = 1,
-        Text = text or "This is a notification.",
-        TextColor3 = Color3.fromRGB(200, 200, 200), -- Trắng xám
-        TextSize = 14,
-        Font = Enum.Font.Gotham,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Top,
-        TextWrapped = true,
-        Parent = bg
-    })
-
-    -- Thanh thời gian (Progress Bar) chạy ở dưới đáy
-    local progressBarBg = library:Create("Frame", {
-        Position = UDim2.new(0, 20, 1, -6),
-        Size = UDim2.new(1, -40, 0, 2),
-        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        BorderSizePixel = 0,
-        Parent = bg
-    })
-
-    local progressBar = library:Create("Frame", {
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(255, 255, 255), -- Trắng
-        BorderSizePixel = 0,
-        Parent = progressBarBg
-    })
-
-    -- === ANIMATION === --
-
-    -- 1. Animation xuất hiện (Slide In từ phải sang trái)
-    tweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
-
-    -- 2. Animation chạy thanh thời gian (Duration)
-    tweenService:Create(progressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut), {Size = UDim2.new(0, 0, 1, 0)}):Play()
-
-    -- 3. Xử lý đóng thông báo sau khi hết giờ
-    task.delay(duration, function()
-        -- Slide Out (Trượt ra ngoài bên phải) và mờ dần
-        local tweenOut = tweenService:Create(bg, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            Position = UDim2.new(1, 40, 0, 0),
-            ImageTransparency = 1
-        })
-        
-        -- Mờ text
-        tweenService:Create(titleLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        tweenService:Create(descLabel, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        tweenService:Create(accentBar, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
-        tweenService:Create(progressBarBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        tweenService:Create(progressBar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-        tweenService:Create(stroke, TweenInfo.new(0.3), {ImageTransparency = 1}):Play()
-
-        tweenOut:Play()
-        tweenOut.Completed:Wait()
-        notifFrame:Destroy()
-    end)
-end
 
 return library
