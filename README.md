@@ -76,6 +76,24 @@ end
 
 
 
+### Adding input
+```lua
+folder:AddInput({
+    text = "test",
+    flag = "input",
+    value = "",
+    placeholder = "test",
+    numeric = false,-- only allow number input if this is true
+    callback = function(text)
+        print("test", text)
+    end
+})
+```
+
+
+
+
+
 ### Adding color
 ```lua
 folder:AddColor({
