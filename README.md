@@ -76,7 +76,7 @@ end
 
 
 
-### Adding TextBox
+### Adding color
 ```lua
 folder:AddColor({
 	text = "Color Picker",
