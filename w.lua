@@ -688,10 +688,10 @@ local function createSlider(option, parent)
 end
 
 local function createList(option, parent, holder)
-	-- [CẤU HÌNH] Kiểm tra Multi-Select
+	
 	option.multiselect = option.multiselect or false
 	
-	-- Chuẩn hóa dữ liệu
+	
 	if option.multiselect then
 		if type(option.value) == "string" and option.value ~= "" then
 			option.value = {[option.value] = true}
@@ -702,7 +702,7 @@ local function createList(option, parent, holder)
 
 	local valueCount = 0
 	
-	-- Main Frame
+	
 	local main = library:Create("Frame", {
 		LayoutOrder = option.position,
 		Size = UDim2.new(1, 0, 0, 52),
@@ -710,7 +710,7 @@ local function createList(option, parent, holder)
 		Parent = parent.content
 	})
 	
-	-- Nền nút bấm
+	
 	local round = library:Create("ImageLabel", {
 		Position = UDim2.new(0, 6, 0, 4),
 		Size = UDim2.new(1, -12, 1, -10),
@@ -723,7 +723,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Tiêu đề
+	
 	local title = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 8),
 		Size = UDim2.new(1, -24, 0, 14),
@@ -736,7 +736,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Giá trị hiển thị
+	
 	local listvalue = library:Create("TextLabel", {
 		Position = UDim2.new(0, 12, 0, 20),
 		Size = UDim2.new(1, -40, 0, 24),
@@ -750,7 +750,7 @@ local function createList(option, parent, holder)
 		Parent = main
 	})
 	
-	-- Mũi tên (Xoay -90 độ để chỉ sang phải cho hợp lý hơn)
+	
 	local arrow = library:Create("ImageLabel", {
 		AnchorPoint = Vector2.new(1, 0.5),
 		Position = UDim2.new(1, -12, 0.5, 0),
@@ -758,12 +758,12 @@ local function createList(option, parent, holder)
 		BackgroundTransparency = 1,
 		Image = "rbxassetid://4918373417",
 		ImageColor3 = Color3.fromRGB(140, 140, 140),
-		Rotation = -90, -- Mặc định chỉ sang phải
+		Rotation = 180, 
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = round
 	})
 
-	-- Popup Holder
+	
 	option.mainHolder = library:Create("ImageButton", {
 		ZIndex = 10,
 		Size = UDim2.new(0, 240, 0, 52),
@@ -778,7 +778,7 @@ local function createList(option, parent, holder)
 		Parent = library.base
 	})
 
-	-- Search Bar
+	
 	local searchBar = library:Create("TextBox", {
 		ZIndex = 11,
 		Position = UDim2.new(0, 10, 0, 5),
@@ -922,7 +922,7 @@ local function createList(option, parent, holder)
 		option:RefreshList(searchBar.Text)
 	end)
 
-	-- Xử lý đóng mở
+	
 	local inContact
 	
 	round.InputBegan:connect(function(input)
@@ -937,10 +937,9 @@ local function createList(option, parent, holder)
 			end
 
 			local position = main.AbsolutePosition
-			local mainSize = main.AbsoluteSize -- Lấy kích thước nút bấm
+			local mainSize = main.AbsoluteSize 
 			
-			-- >>> [CHỈNH SỬA Ở ĐÂY] <<<
-			-- Hiển thị bên PHẢI: X + Chiều rộng nút + 5px khoảng cách. Giữ nguyên Y.
+			
 			option.mainHolder.Position = UDim2.new(0, position.X + mainSize.X + 5, 0, position.Y)
 			
 			option.open = true
@@ -949,12 +948,12 @@ local function createList(option, parent, holder)
 			searchBar.Text = ""
 			option:RefreshList("") 
 			
-			-- Animation
+			
 			option.mainHolder.ImageTransparency = 1
 			tweenService:Create(option.mainHolder, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
 			
-			-- Xoay mũi tên (Từ -90 sang 90 độ khi mở)
-			tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 90}):Play()
+			
+			tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = -90}):Play()
 			tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
 
 			wait() 
@@ -1009,8 +1008,8 @@ local function createList(option, parent, holder)
 		
 		tweenService:Create(self.mainHolder, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1}):Play()
 		
-		-- Trả mũi tên về -90 (hướng sang phải)
-		tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = -90}):Play()
+		
+		tweenService:Create(arrow, TweenInfo.new(0.3), {Rotation = 180}):Play()
 		tweenService:Create(round, TweenInfo.new(0.2), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 
 		delay(0.2, function()
