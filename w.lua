@@ -214,7 +214,7 @@ end
 
 function createToggle(option, parent)
 	
-	option.onColor = option.onColor or Color3.fromRGB(255, 255, 255) 
+	option.onColor = option.onColor or Color3.fromRGB(0, 255, 128) 
 	option.offColor = Color3.fromRGB(50, 50, 50)
 
 	local main = library:Create("TextButton", { 
@@ -325,74 +325,138 @@ function createToggle(option, parent)
 	end})
 end
 
-function createButton(option, parent)
-	local main = library:Create("TextLabel", {
-		ZIndex = 2,
+local function createButton(option, parent)
+	-- Config màu sắc
+	option.callback = option.callback or function() end
+	local hoverColor = Color3.fromRGB(45, 45, 45)
+	local defaultColor = Color3.fromRGB(35, 35, 35)
+	local clickColor = Color3.fromRGB(255, 255, 255) -- Màu của gợn sóng (Ripple)
+
+	-- 1. Container chính (Dùng TextButton để bắt input tốt hơn)
+	local main = library:Create("TextButton", {
 		LayoutOrder = option.position,
-		Size = UDim2.new(1, 0, 0, 34),
+		Size = UDim2.new(1, 0, 0, 36), -- Tăng chiều cao xíu cho thoáng
 		BackgroundTransparency = 1,
-		Text = " " .. option.text,
-		TextSize = 17,
-		Font = Enum.Font.SourceSans,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
+		Text = "",
+		AutoButtonColor = false,
 		Parent = parent.content
 	})
-	
-	local round = library:Create("ImageLabel", {
+
+	-- 2. Background (Dùng Frame + UICorner cho mượt)
+	local bg = library:Create("Frame", {
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(1, -12, 1, -10),
-		BackgroundTransparency = 1,
-		Image = "rbxassetid://3570695787",
-		ImageColor3 = Color3.fromRGB(40, 40, 40),
-		ScaleType = Enum.ScaleType.Slice,
-		SliceCenter = Rect.new(100, 100, 100, 100),
-		SliceScale = 0.02,
+		Size = UDim2.new(1, -10, 1, -8),
+		BackgroundColor3 = defaultColor,
+		BorderSizePixel = 0,
+		ClipsDescendants = true, -- Quan trọng để hiệu ứng Ripple không bị tràn ra
 		Parent = main
 	})
+
+	library:Create("UICorner", {
+		CornerRadius = UDim.new(0, 6),
+		Parent = bg
+	})
+
+	-- 3. Viền (UIStroke - làm nút sang hơn)
+	local stroke = library:Create("UIStroke", {
+		Color = Color3.fromRGB(60, 60, 60),
+		Thickness = 1,
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Transparency = 0.5,
+		Parent = bg
+	})
+
+	-- 4. Text (Căn giữa nhìn sẽ giống nút bấm hơn)
+	local title = library:Create("TextLabel", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		Text = option.text,
+		TextSize = 16,
+		Font = Enum.Font.GothamBold, -- Font đậm nhìn khỏe khoắn hơn
+		TextColor3 = Color3.fromRGB(230, 230, 230),
+		TextXAlignment = Enum.TextXAlignment.Center, -- Căn giữa
+		Parent = bg
+	})
 	
-	local inContact
-	local clicking
-	main.InputBegan:connect(function(input)
-		if input.UserInputType == ui then
-			library.flags[option.flag] = true
-			clicking = true
-			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-			option.callback()
-		elseif input.UserInputType == Enum.UserInputType.Touch then
-			library.flags[option.flag] = true
-			clicking = true
-			tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-			option.callback()
-		end
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			inContact = true
-			tweenService:Create(round, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
-		end
+	-- Thêm icon nếu có (Tùy chọn nâng cao)
+	if option.icon then
+		title.TextXAlignment = Enum.TextXAlignment.Left
+		title.Position = UDim2.new(0, 35, 0, 0)
+		title.Size = UDim2.new(1, -35, 1, 0)
+		
+		library:Create("ImageLabel", {
+			Position = UDim2.new(0, 8, 0.5, -9),
+			Size = UDim2.new(0, 18, 0, 18),
+			BackgroundTransparency = 1,
+			Image = option.icon,
+			ImageColor3 = Color3.fromRGB(230, 230, 230),
+			Parent = bg
+		})
+	end
+
+	-- 5. Hiệu ứng Ripple (Gợn sóng khi click)
+	local function spawnRipple(input)
+		local x, y = input.Position.X, input.Position.Y
+		local circle = library:Create("ImageLabel", {
+			BackgroundTransparency = 1,
+			Image = "rbxassetid://266543268", -- Ảnh tròn mờ
+			ImageColor3 = clickColor,
+			ImageTransparency = 0.6,
+			Parent = bg,
+			ZIndex = 10
+		})
+		
+		-- Tính toán vị trí click tương đối với nút
+		local btnAbsolutePosition = bg.AbsolutePosition
+		local relativeX = x - btnAbsolutePosition.X
+		local relativeY = y - btnAbsolutePosition.Y
+		
+		circle.Position = UDim2.new(0, relativeX, 0, relativeY)
+		circle.Size = UDim2.new(0, 0, 0, 0)
+		circle.AnchorPoint = Vector2.new(0.5, 0.5)
+
+		-- Animation phóng to vòng tròn
+		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		local tweenSize = tweenService:Create(circle, tweenInfo, {Size = UDim2.new(0, 300, 0, 300), ImageTransparency = 1})
+		
+		tweenSize:Play()
+		tweenSize.Completed:Connect(function()
+			circle:Destroy()
+		end)
+	end
+
+	-- 6. Xử lý sự kiện (Hover, Click)
+	main.MouseEnter:Connect(function()
+		tweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+		tweenService:Create(stroke, TweenInfo.new(0.2), {Transparency = 0, Color = Color3.fromRGB(100, 100, 100)}):Play()
+		tweenService:Create(title, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
 	end)
-	
-	main.InputEnded:connect(function(input)
-		if input.UserInputType == ui then
-			clicking = false
-			if inContact then
-				tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
-			else
-				tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-			end
-		elseif input.UserInputType == Enum.UserInputType.Touch then
-			clicking = false
-			if inContact then
-				tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(60, 60, 60)}):Play()
-			else
-				tweenService:Create(round, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-			end
-		end
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			inContact = false
-			if not clicking then
-				tweenService:Create(round, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(40, 40, 40)}):Play()
-			end
-		end
+
+	main.MouseLeave:Connect(function()
+		tweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = defaultColor}):Play()
+		tweenService:Create(stroke, TweenInfo.new(0.2), {Transparency = 0.5, Color = Color3.fromRGB(60, 60, 60)}):Play()
+		tweenService:Create(title, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
+	end)
+
+	main.MouseButton1Click:Connect(function()
+		-- Hiệu ứng nhún (Bounce)
+		local oldSize = UDim2.new(1, -10, 1, -8)
+		local shrinkSize = UDim2.new(1, -14, 1, -10)
+		
+		-- Chạy Ripple
+		spawnRipple(game:GetService("UserInputService"):GetMouseLocation())
+		
+		-- Chạy Bounce
+		local t1 = tweenService:Create(bg, TweenInfo.new(0.05), {Size = shrinkSize})
+		t1:Play()
+		t1.Completed:Connect(function()
+			tweenService:Create(bg, TweenInfo.new(0.1, Enum.EasingStyle.Spring), {Size = oldSize}):Play()
+		end)
+
+		-- Chạy Callback
+		library.flags[option.flag] = true
+		task.spawn(option.callback)
 	end)
 end
 
