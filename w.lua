@@ -326,138 +326,166 @@ function createToggle(option, parent)
 end
 
 local function createButton(option, parent)
-	-- Config màu sắc
-	option.callback = option.callback or function() end
-	local hoverColor = Color3.fromRGB(45, 45, 45)
-	local defaultColor = Color3.fromRGB(35, 35, 35)
-	local clickColor = Color3.fromRGB(255, 255, 255) -- Màu của gợn sóng (Ripple)
+    -- Cấu trúc chính
+    local main = library:Create("TextButton", { -- Đổi sang TextButton để bắt input tốt hơn
+        LayoutOrder = option.position,
+        Size = UDim2.new(1, 0, 0, 38), -- Tăng chiều cao một chút cho đẹp
+        BackgroundTransparency = 1,
+        Text = "",
+        AutoButtonColor = false,
+        Parent = parent.content
+    })
 
-	-- 1. Container chính (Dùng TextButton để bắt input tốt hơn)
-	local main = library:Create("TextButton", {
-		LayoutOrder = option.position,
-		Size = UDim2.new(1, 0, 0, 36), -- Tăng chiều cao xíu cho thoáng
-		BackgroundTransparency = 1,
-		Text = "",
-		AutoButtonColor = false,
-		Parent = parent.content
-	})
+    -- Background chính (Container)
+    local container = library:Create("Frame", {
+        Name = "Container",
+        Size = UDim2.new(1, 0, 1, -4),
+        Position = UDim2.new(0, 0, 0, 2),
+        BackgroundColor3 = Color3.fromRGB(35, 35, 35),
+        ClipsDescendants = true, -- Quan trọng cho hiệu ứng Ripple
+        Parent = main
+    })
 
-	-- 2. Background (Dùng Frame + UICorner cho mượt)
-	local bg = library:Create("Frame", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(1, -10, 1, -8),
-		BackgroundColor3 = defaultColor,
-		BorderSizePixel = 0,
-		ClipsDescendants = true, -- Quan trọng để hiệu ứng Ripple không bị tràn ra
-		Parent = main
-	})
+    library:Create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = container
+    })
 
-	library:Create("UICorner", {
-		CornerRadius = UDim.new(0, 6),
-		Parent = bg
-	})
+    -- Viền (Stroke)
+    local stroke = library:Create("UIStroke", {
+        Color = Color3.fromRGB(60, 60, 60),
+        Thickness = 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = container
+    })
 
-	-- 3. Viền (UIStroke - làm nút sang hơn)
-	local stroke = library:Create("UIStroke", {
-		Color = Color3.fromRGB(60, 60, 60),
-		Thickness = 1,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Transparency = 0.5,
-		Parent = bg
-	})
+    -- Icon (Nếu có)
+    if option.icon then
+        library:Create("ImageLabel", {
+            Position = UDim2.new(0, 10, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            Size = UDim2.new(0, 20, 0, 20),
+            BackgroundTransparency = 1,
+            Image = option.icon,
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            Parent = container
+        })
+    end
 
-	-- 4. Text (Căn giữa nhìn sẽ giống nút bấm hơn)
-	local title = library:Create("TextLabel", {
-		Size = UDim2.new(1, 0, 1, 0),
-		BackgroundTransparency = 1,
-		Text = option.text,
-		TextSize = 16,
-		Font = Enum.Font.GothamBold, -- Font đậm nhìn khỏe khoắn hơn
-		TextColor3 = Color3.fromRGB(230, 230, 230),
-		TextXAlignment = Enum.TextXAlignment.Center, -- Căn giữa
-		Parent = bg
-	})
-	
-	-- Thêm icon nếu có (Tùy chọn nâng cao)
-	if option.icon then
-		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.Position = UDim2.new(0, 35, 0, 0)
-		title.Size = UDim2.new(1, -35, 1, 0)
-		
-		library:Create("ImageLabel", {
-			Position = UDim2.new(0, 8, 0.5, -9),
-			Size = UDim2.new(0, 18, 0, 18),
-			BackgroundTransparency = 1,
-			Image = option.icon,
-			ImageColor3 = Color3.fromRGB(230, 230, 230),
-			Parent = bg
-		})
-	end
+    -- Text
+    local title = library:Create("TextLabel", {
+        Size = UDim2.new(1, option.icon and -40 or 0, 1, 0),
+        Position = UDim2.new(0, option.icon and 35 or 0, 0, 0),
+        BackgroundTransparency = 1,
+        Text = option.text,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = Color3.fromRGB(200, 200, 200),
+        TextXAlignment = option.icon and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center,
+        Parent = container
+    })
 
-	-- 5. Hiệu ứng Ripple (Gợn sóng khi click)
-	local function spawnRipple(input)
-		local x, y = input.Position.X, input.Position.Y
-		local circle = library:Create("ImageLabel", {
-			BackgroundTransparency = 1,
-			Image = "rbxassetid://266543268", -- Ảnh tròn mờ
-			ImageColor3 = clickColor,
-			ImageTransparency = 0.6,
-			Parent = bg,
-			ZIndex = 10
-		})
-		
-		-- Tính toán vị trí click tương đối với nút
-		local btnAbsolutePosition = bg.AbsolutePosition
-		local relativeX = x - btnAbsolutePosition.X
-		local relativeY = y - btnAbsolutePosition.Y
-		
-		circle.Position = UDim2.new(0, relativeX, 0, relativeY)
-		circle.Size = UDim2.new(0, 0, 0, 0)
-		circle.AnchorPoint = Vector2.new(0.5, 0.5)
+    -- Hàm tạo hiệu ứng Ripple (Gợn sóng)
+    local function spawnRipple(inputObject)
+        if not option.active then return end
+        
+        local ripple = library:Create("ImageLabel", {
+            Name = "Ripple",
+            BackgroundTransparency = 1,
+            Image = "rbxassetid://2708891598", -- Texture tròn mờ
+            ImageColor3 = Color3.fromRGB(255, 255, 255),
+            ImageTransparency = 0.6,
+            Parent = container,
+            ZIndex = 5
+        })
 
-		-- Animation phóng to vòng tròn
-		local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-		local tweenSize = tweenService:Create(circle, tweenInfo, {Size = UDim2.new(0, 300, 0, 300), ImageTransparency = 1})
-		
-		tweenSize:Play()
-		tweenSize.Completed:Connect(function()
-			circle:Destroy()
-		end)
-	end
+        local x, y
+        if inputObject.UserInputType == Enum.UserInputType.Touch or inputObject.UserInputType == Enum.UserInputType.MouseButton1 then
+            x = inputObject.Position.X - container.AbsolutePosition.X
+            y = inputObject.Position.Y - container.AbsolutePosition.Y
+        else
+            x = container.AbsoluteSize.X / 2
+            y = container.AbsoluteSize.Y / 2
+        end
 
-	-- 6. Xử lý sự kiện (Hover, Click)
-	main.MouseEnter:Connect(function()
-		tweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
-		tweenService:Create(stroke, TweenInfo.new(0.2), {Transparency = 0, Color = Color3.fromRGB(100, 100, 100)}):Play()
-		tweenService:Create(title, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-	end)
+        ripple.Position = UDim2.new(0, x, 0, y)
+        ripple.Size = UDim2.new(0, 0, 0, 0)
+        ripple.AnchorPoint = Vector2.new(0.5, 0.5)
 
-	main.MouseLeave:Connect(function()
-		tweenService:Create(bg, TweenInfo.new(0.2), {BackgroundColor3 = defaultColor}):Play()
-		tweenService:Create(stroke, TweenInfo.new(0.2), {Transparency = 0.5, Color = Color3.fromRGB(60, 60, 60)}):Play()
-		tweenService:Create(title, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(230, 230, 230)}):Play()
-	end)
+        local maxSize = math.max(container.AbsoluteSize.X, container.AbsoluteSize.Y) * 2.5
+        
+        tweenService:Create(ripple, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, maxSize, 0, maxSize),
+            ImageTransparency = 1
+        }):Play()
 
-	main.MouseButton1Click:Connect(function()
-		-- Hiệu ứng nhún (Bounce)
-		local oldSize = UDim2.new(1, -10, 1, -8)
-		local shrinkSize = UDim2.new(1, -14, 1, -10)
-		
-		-- Chạy Ripple
-		spawnRipple(game:GetService("UserInputService"):GetMouseLocation())
-		
-		-- Chạy Bounce
-		local t1 = tweenService:Create(bg, TweenInfo.new(0.05), {Size = shrinkSize})
-		t1:Play()
-		t1.Completed:Connect(function()
-			tweenService:Create(bg, TweenInfo.new(0.1, Enum.EasingStyle.Spring), {Size = oldSize}):Play()
-		end)
+        game:GetService("Debris"):AddItem(ripple, 0.6)
+    end
 
-		-- Chạy Callback
-		library.flags[option.flag] = true
-		task.spawn(option.callback)
-	end)
+    -- Sự kiện Hover (Di chuột vào)
+    main.MouseEnter:Connect(function()
+        if not option.active then return end
+        tweenService:Create(container, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+        tweenService:Create(stroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(100, 100, 100)}):Play()
+        tweenService:Create(title, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+    end)
+
+    -- Sự kiện Hover rời đi
+    main.MouseLeave:Connect(function()
+        if not option.active then return end
+        tweenService:Create(container, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+        tweenService:Create(stroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(60, 60, 60)}):Play()
+        tweenService:Create(title, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+    end)
+
+    -- Sự kiện Click
+    main.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and option.active then
+            spawnRipple(input)
+            tweenService:Create(container, TweenInfo.new(0.1), {Size = UDim2.new(1, -2, 1, -6)}):Play() -- Hiệu ứng ấn xuống
+            
+            task.spawn(function()
+                option.callback()
+            end)
+        end
+    end)
+
+    main.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            tweenService:Create(container, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 1, -4)}):Play() -- Trả về kích thước cũ
+        end
+    end)
+
+    -- Các hàm API mở rộng cho Button
+    
+    function option:SetText(text)
+        option.text = text
+        title.Text = text
+    end
+
+    function option:SetCallback(fn)
+        option.callback = fn
+    end
+
+    function option:Fire()
+        option.callback()
+        spawnRipple({UserInputType = Enum.UserInputType.None}) -- Fake ripple center
+    end
+
+    function option:Lock(bool)
+        option.active = not bool
+        if bool then
+            -- Trạng thái bị khóa
+            tweenService:Create(container, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
+            tweenService:Create(title, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+            tweenService:Create(stroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(40, 40, 40)}):Play()
+        else
+            -- Trạng thái bình thường
+            tweenService:Create(container, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+            tweenService:Create(title, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+            tweenService:Create(stroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(60, 60, 60)}):Play()
+        end
+    end
 end
 
 local function createBind(option, parent)
@@ -1714,6 +1742,8 @@ end
 	function parent:AddButton(option)
 		option = typeof(option) == "table" and option or {}
 		option.text = tostring(option.text)
+        option.icon = option.icon or nil -- Hỗ trợ icon (rbxassetid://...)
+        option.active = true -- Trạng thái hoạt động
 		option.callback = typeof(option.callback) == "function" and option.callback or function() end
 		option.type = "button"
 		option.position = #self.options
